@@ -1,15 +1,17 @@
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import java.util.Arrays;
+
 public class Main {
     public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how GIGA IDE suggests fixing it.
-        System.out.print("Hello and welcome!");
+        MerkleHellmanAlgorithm crypto = new MerkleHellmanAlgorithm(new int[]{2, 7, 11, 21, 42, 89, 180, 354}, 881, 588);
+        crypto.generatePublicKey();
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.printf("i = %d", i);
-        }
+        byte[] message = "Hello World!".getBytes();
+        System.out.println(new String(message));
+
+        int[] encryptedMessage = crypto.encrypt(message);
+        System.out.println(Arrays.toString(encryptedMessage));
+
+        byte[] decryptedMessage = crypto.decrypt(encryptedMessage);
+        System.out.println(new String(decryptedMessage));
     }
 }
