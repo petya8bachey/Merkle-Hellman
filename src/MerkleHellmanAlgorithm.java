@@ -4,10 +4,6 @@ public class MerkleHellmanAlgorithm {
     int q;
     int r;
 
-    public int[] getPublicKey() {
-        return publicKey;
-    }
-
     public MerkleHellmanAlgorithm(int[] privateKey, int q, int r) {
         this.privateKey = privateKey;
         this.q = q;
@@ -22,72 +18,51 @@ public class MerkleHellmanAlgorithm {
         generatePublicKey();
     }
 
-    public void generatePublicKey() {
+    private void generatePublicKey() {
         publicKey = new int[privateKey.length];
         for (int i = 0; i < privateKey.length; i++) {
-            publicKey[i] = transformKey(privateKey[i]);
+            publicKey[i] = (privateKey[i] * r) % q;
         }
     }
 
-    int transformKey(int x) {
-        return x * r % q;
-    }
-
-    int transformByte(byte b) {
+    private int transformByte(byte b) {
         int result = 0;
         for (int i = 0; i < 8; i++) {
-            result += ((b >> i) & 1 ) * publicKey[7 - i];
+            result += ((b >> i) & 1) * publicKey[7 - i];
         }
         return result;
     }
 
-    byte transformInt(int x) {
-        byte result = 0b00000000;
-        int counter = x * modInverse(r, q) % q;
-        while ((counter != 0)) {
+    private byte transformInt(int x) {
+        byte result = 0;
+        int counter = (x * modInverse(r, q)) % q;
+
+        while (counter != 0) {
             int index = findMaxLessThan(counter);
             counter -= privateKey[index];
-            result = setBit(result, index);
+            result |= (byte) (1 << (7 - index));
         }
         return result;
     }
 
-    public int findMaxLessThan(int number) {
-        int maxIndex = -1;
-
-        for (int i = 0; i < privateKey.length; i++) {
-            if (number >= privateKey[i]) {
-                maxIndex = i;
-            } else {
-                return maxIndex;
-            }
+    private int findMaxLessThan(int number) {
+        for (int i = privateKey.length - 1; i >= 0; i--) {
+            if (number >= privateKey[i]) return i;
         }
-        return maxIndex;
+        return -1;
     }
 
-
-    public static byte setBit(byte b, int bitPosition) {
-        return (byte) (b | (1 << 7 - bitPosition));
-    }
-
-    public static int[] extendedGCD(int a, int b) {
-        if (a == 0) {
-            return new int[] {b, 0, 1};
-        }
+    private int[] extendedGCD(int a, int b) {
+        if (a == 0) return new int[] {b, 0, 1};
         int[] result = extendedGCD(b % a, a);
-        int gcd = result[0];
-        int x1 = result[1];
-        int y1 = result[2];
+        int gcd = result[0], x1 = result[1], y1 = result[2];
         int x = y1 - (b / a) * x1;
         int y = x1;
         return new int[] {gcd, x, y};
     }
 
-    public static int modInverse(int a, int m) {
-        int[] result = extendedGCD(a, m);
-        int gcd = result[0];
-        int x = result[1];
-        return (x % m + m) % m;
+    private int modInverse(int a, int m) {
+        return (extendedGCD(a, m)[1] % m + m) % m;
     }
 
     public int[] encrypt(byte[] message) {
